@@ -1,5 +1,5 @@
 Board game;
-int i;
+boolean bestShow;
 
 void settings()
 {
@@ -9,10 +9,11 @@ void settings()
 void setup(){
   frameRate(150);
   background(0, 0, 50 );
-  game = new Board(100, 100, 50);
+  game = new Board(100, 100, 200);
+  bestShow = false;
   textSize(20);
   text( "Generation: " + int(game.gen), width - 180, height - 40 );
-  text( "Fittest: " + int( game.bestRunner.leng ), width - 160, height - 10);
+  text( "Fittest: " + int( game.bestFit ), width - 160, height - 10);
 }
 
 void draw(){
@@ -22,7 +23,7 @@ void draw(){
       background(0,0,50 );
       textSize(20);
       text( "Generation: " + int(game.gen), width - 180, height - 40 );
-      text( "Fittest: " + int( game.bestRunner.leng ), width - 160, height - 10);
+      text( "Fittest: " + int( game.bestFit ), width - 160, height - 10);
       game.update();
       game.show();
     }
@@ -37,8 +38,9 @@ void draw(){
 
 void mouseClicked()
 {
-   game.naturalSelection();
-   game.mutateBabies();
+   bestShow = !bestShow;
+   //game.naturalSelection();
+   //game.mutateBabies();
 }
 public void keyPressed()
 {
@@ -63,6 +65,9 @@ public void keyPressed()
            break;
         case 40:    //down
            frameRate(40);
+           break;
+        case 70:
+           bestShow = !bestShow;
            break;
      }
   }
