@@ -2,19 +2,23 @@ import java.util.*;
 public class Board
 {
   int fitnessSum;
+  int currentMax;
   int gen;
   int [][] arr;
   Runner [] runners;
+  Vector <Runner> bestRunners;
   Runner bestRunner;
   int bestFit;
   int width, height;
   public Board( int w, int h, int players )
   {
+    currentMax = 0;
     bestFit = 0;
     fitnessSum = 0;
     gen = 1;
     width = w;
     height = h;
+    //bestRunners = new Vector<Runner>();
     bestRunner = new Runner( width/2, height/2, 0 );
     arr = new int[w][h];
     runners = new Runner[players];
@@ -29,13 +33,14 @@ public class Board
     {
       runners[i].update();
       bestFit = runners[i].leng > bestFit ? runners[i].leng : bestFit;
+      currentMax = runners[i].leng > currentMax ? runners[i].leng : currentMax;
     }
   }
   public void show()
   {
     for( int i = 0; i < runners.length; ++i )
     {
-      runners[i].show(); 
+      runners[i].show(currentMax); 
     }
   }
   public boolean someAlive()
@@ -51,12 +56,16 @@ public class Board
   }
   void naturalSelection()
   {
+    currentMax = 0;
     Runner[] newRunners = new Runner[runners.length];
     calculateFitnessSum();
-    newRunners[0] = new Runner( width/2, height/2, 0 );
-    newRunners[0].brain.weights = bestRunner.brain.weights;
-    newRunners[0].brain.weightsTwo = bestRunner.brain.weightsTwo;
-    for ( int i = 1; i < newRunners.length; ++i )
+    for ( int i = 0; i < 5; ++i )
+    {    
+      newRunners[i] = new Runner( width/2, height/2, 0 );
+      newRunners[i].brain.weights = bestRunner.brain.weights;
+      newRunners[i].brain.weightsTwo = bestRunner.brain.weightsTwo;
+    }
+    for ( int i = 5; i < newRunners.length; ++i )
     {
       Runner mom = selectParent();
       Runner dad = selectParent();
@@ -66,12 +75,12 @@ public class Board
       for( int j = 0; j < mom.brain.weights.length; ++j )
       {
         Random crossOver = new Random();
-        newRunners[i].brain.weights[j] = crossOver.nextInt(7) == 0 ? dom.brain.weights[j] : help.brain.weights[j];
+        newRunners[i].brain.weights[j] = crossOver.nextInt(3) == 0 ? dom.brain.weights[j] : help.brain.weights[j];
       }
       for( int j = 0; j < mom.brain.weightsTwo.length; ++j )
       {
         Random crossOver = new Random();
-        newRunners[i].brain.weightsTwo[j] = crossOver.nextInt(7) == 0 ? dom.brain.weightsTwo[j] : help.brain.weightsTwo[j];
+        newRunners[i].brain.weightsTwo[j] = crossOver.nextInt(3) == 0 ? dom.brain.weightsTwo[j] : help.brain.weightsTwo[j];
       }
     }
     runners = newRunners.clone();
@@ -84,7 +93,8 @@ public class Board
       fitnessSum += runners[i].fitness;
       bestRunner = runners[i].fitness > bestRunner.fitness ? runners[i]: bestRunner; 
     }
-    System.out.println(fitnessSum);
+    System.out.println("Generation " + gen);
+    System.out.println("Total Fitness " + fitnessSum);
   }
   Runner selectParent(){
     float rand = random(fitnessSum);
@@ -98,7 +108,7 @@ public class Board
     return null;
   }
   void mutateBabies(){
-    for ( int i = 1; i < runners.length; ++i)
+    for ( int i = 5; i < runners.length; ++i)
     {
       runners[i].brain.mutate();
     }

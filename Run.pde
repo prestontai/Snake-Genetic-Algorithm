@@ -14,6 +14,7 @@ public class Runner
   int id;
   int x, y;
   Vector <PVector> snakeCoords;
+  Vector <PVector> obstacles;
   PVector goal;
   Brain brain;
   boolean alive;
@@ -26,22 +27,29 @@ public class Runner
     boardHeight = yy * 2;
     lastEaten = 0;
     snakeCoords = new Vector<PVector>();
+    obstacles = new Vector<PVector>();
+    goal = new PVector();
     leng = 1;
     fitness = 0;
     alive = true;
     ownBoard = new boolean[boardWidth][boardHeight];
-    goal = new PVector( getRandom(boardWidth), getRandom(boardHeight) );
     distanceToGoal = 400;
     brain = new Brain();
     direction = 3;
     id = ident;
     x = xx;
-    y = yy;
+    y = yy;;
     for( int i = 0; i < leng; ++i)
     {
       snakeCoords.add( new PVector(x-i, y) );
     }
+    for ( int i = 0; i < 10 && obstaclesOn; ++i )
+    {
+      obstacles.add( new PVector(getRandom(100), getRandom(100)));
+      ownBoard[(int)obstacles.elementAt(i).x][(int)obstacles.elementAt(i).y] = false;
+    }
     setBoard();
+    makeGoal();
   }
   private boolean inBounds()
   {
@@ -65,6 +73,10 @@ public class Runner
     {
       ownBoard[(int)snakeCoords.elementAt(i).x][(int)snakeCoords.elementAt(i).y] = false;
     }
+    for ( int i = 0; i < obstacles.size(); ++i )
+    {
+      ownBoard[(int)obstacles.elementAt(i).x][(int)obstacles.elementAt(i).y] = false;
+    }
   }
   public void update()
   {
@@ -81,18 +93,28 @@ public class Runner
       else{
         snakeCoords.remove( 0 );
         snakeCoords.add( new PVector(x, y) );
-        ownBoard[x][y] = false;
+        //ownBoard[x][y] = false;
       }
       if ( goal.x == x && goal.y == y )
       {
         lastEaten = 0;
-        goal = new PVector( getRandom(boardWidth), getRandom(boardHeight) );
+        makeGoal();
         ++leng;
         snakeCoords.add( new PVector(x, y) );
       }
     }
   }
-  public void show()
+  private void makeGoal()
+  {
+    goal.x = getRandom(100);
+    goal.y = getRandom(100);
+    while ( !ownBoard[(int)goal.x][(int)goal.y])
+    {
+      goal.x = getRandom(100);
+      goal.y = getRandom(100);
+    }
+  }
+  public void show(int currentMax)
   {
     if ( alive == true )
     {
@@ -100,9 +122,14 @@ public class Runner
       {
         fill(150, 150, 255);
         rect( goal.x * 8, goal.y *8, 8, 8);
+        
+        fill(leng + 100, 50, leng*4);
+        if ( leng == currentMax)
+        {
+          fill(255, 255, 50);
+        }
         for ( int i = 0; i < leng; ++i )
         {
-          fill(leng + 100, 50, leng*4);
           rect( snakeCoords.elementAt(i).x*8, snakeCoords.elementAt(i).y*8, 8, 8);
         }
       }
@@ -117,6 +144,12 @@ public class Runner
             fill(leng + 100, 50, leng*4);
             rect( snakeCoords.elementAt(i).x*8, snakeCoords.elementAt(i).y*8, 8, 8);
           }
+          for ( int i = 0; i < obstacles.size(); ++i )
+          {
+            fill(200, 255, 0);
+            rect( obstacles.elementAt(i).x*8, obstacles.elementAt(i).y*8, 8, 8);
+          }
+
         }
       }
     }
@@ -252,10 +285,9 @@ public class Runner
         turnRight();
         break;
     }
-    
   }
   void calculateFitness(){
-    fitness = 1 + (float)(5/(distanceToGoal)) + (leng - 1) * 20;
+    fitness = 1 + (float)(5/(distanceToGoal+1)) + (float)Math.pow(leng - 1, 1.5) * 20;
   }
   int getRandom(int num)
   {

@@ -69,13 +69,13 @@ class Brain{
   void mutate(){
     for ( int i = 0; i < weights.length; ++i ){
       float rand = random(1);
-      if ( rand < 0.01 ){
+      if ( rand < 0.04 ){
         weights[i] = random(1);
       }
     }
     for ( int i = 0; i < weightsTwo.length; ++i ){
       float rand = random(1);
-      if ( rand < 0.01 ){
+      if ( rand < 0.04 ){
         weightsTwo[i] = random(1);
       }
     }
